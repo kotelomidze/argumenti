@@ -1,0 +1,1320 @@
+<!DOCTYPE html>
+<html lang="ka">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>არგუმენტი - სასწავლო აპლიკაცია</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Georgian:wght@100..900&display=swap" rel="stylesheet">
+    
+    <style>
+      body {
+        font-family: 'Noto Sans Georgian', sans-serif;
+      }
+      /* Animations */
+      @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(10px); }
+          to { opacity: 1; transform: translateY(0); }
+      }
+      .animate-fade-in {
+          animation: fadeIn 0.4s ease-out forwards;
+      }
+      @keyframes bounceShort {
+          0%, 100% { transform: translateX(0); }
+          50% { transform: translateX(5px); }
+      }
+      .animate-bounce-short {
+          animation: bounceShort 1s infinite;
+      }
+    </style>
+
+    <!-- Import Map for React and Libraries -->
+    <script type="importmap">
+    {
+      "imports": {
+        "react": "https://esm.sh/react@18.2.0",
+        "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
+        "lucide-react": "https://esm.sh/lucide-react@0.292.0"
+      }
+    }
+    </script>
+    
+    <!-- Babel for JSX compilation in browser -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<link rel="stylesheet" href="/index.css">
+</head>
+<body class="bg-slate-50 text-slate-900">
+    <div id="root"></div>
+
+    <script type="text/babel" data-type="module">
+        import React, { useState, useEffect } from 'react';
+        import { createRoot } from 'react-dom/client';
+        import { 
+            BookOpen, Target, PenTool, CheckCircle2, Menu, X, 
+            Quote, Globe, Users, Microscope, Scroll, HeartHandshake, 
+            BarChart, BrainCircuit, Lightbulb, ArrowRight, CheckCircle, 
+            XCircle, Check, HelpCircle 
+        } from 'lucide-react';
+
+        // --- TYPES & ENUMS ---
+        const ArgumentType = {
+            CITATION: 'ციტატა',
+            COMMON_KNOWLEDGE: 'საზოგადოდ ცნობილი დებულება',
+            OTHERS_OPINION: 'სხვათა მოსაზრებები',
+            SCIENTIFIC_FACT: 'სამეცნიერო ფაქტები',
+            HISTORICAL_FACT: 'ისტორიული ფაქტები',
+            PERSONAL_EXPERIENCE: 'პირადი გამოცდილება',
+            STATISTICS: 'სტატისტიკა',
+            PERSONAL_LOGIC: 'თქვენეული ლოგიკა',
+        };
+
+        // --- DATA ---
+        const theoryData = [
+          {
+            id: 't1',
+            type: ArgumentType.CITATION,
+            description: 'გამოიყენება ავტორიტეტული პიროვნების, მწერლის ან საჯარო ფიგურის სიტყვების მოსაყვანად და აზრის გასამყარებლად.',
+            phrases: [
+              'ზემოთ ნათქვამს ადასტურებს შემდეგი სიტყვები...',
+              'საილუსტრაციოდ მოვიყვანთ ფრაგმენტს ნაწარმოებიდან...',
+              'ავტორის დამოკიდებულება მჟღავნდება შემდეგ სიტყვებში...'
+            ],
+            examples: [
+              'ზემოთ ნათქვამს ადასტურებს ილია ჭავჭავაძის სიტყვები: "კმაყოფილება კაცის მომაკვდინებელი სენია".',
+              'საილუსტრაციოდ მოვიყვანთ შოთა რუსთაველის აფორიზმს: "კაცმან საქმე მოიგვაროს, ვეჭვ, ჭმუნვასა ესე სჯობდეს".'
+            ],
+            color: 'bg-blue-100 border-blue-500 text-blue-900',
+            iconName: 'quote'
+          },
+          {
+            id: 't2',
+            type: ArgumentType.COMMON_KNOWLEDGE,
+            description: 'ეყრდნობა საზოგადოებაში დამკვიდრებულ, უდავო ჭეშმატირებებსა და აქსიომებს.',
+            phrases: [
+              'როგორც ცნობილია, არავინ დავობს იმის შესახებ, რომ...',
+              'საყოველთაოდ აღიარებულია, რომ...',
+              'საზოგადოდ მიღებული თვალსაზრისის თანახმად...'
+            ],
+            examples: [
+              'საყოველთაოდ აღიარებულია, რომ განათლება ქვეყნის განვითარების ფუნდამენტია.',
+              'როგორც ცნობილია, ჯანსაღი ცხოვრების წესი დღეგრძელობის საწინდარია.'
+            ],
+            color: 'bg-green-100 border-green-500 text-green-900',
+            iconName: 'globe'
+          },
+          {
+            id: 't3',
+            type: ArgumentType.OTHERS_OPINION,
+            description: 'იშველიებს სხვა ადამიანების, საზოგადოების გარკვეული ნაწილის შეხედულებებს.',
+            phrases: [
+              'ბევრი ფიქრობს, რომ...',
+              'საზოგადოებაში გავრცელებული აზრით...',
+              'ამ მოსაზრებას იზიარებს მრავალი კრიტიკოსი...'
+            ],
+            examples: [
+              'ბევრი ფიქრობს, რომ სოციალური ქსელები მოზარდებზე უარყოფითად მოქმედებს.',
+              'საზოგადოებაში გავრცელებული აზრით, ტრადიციების შენარჩუნება აუცილებელია.'
+            ],
+            color: 'bg-purple-100 border-purple-500 text-purple-900',
+            iconName: 'users'
+          },
+          {
+            id: 't4',
+            type: ArgumentType.SCIENTIFIC_FACT,
+            description: 'ეყრდნობა მეცნიერულ კვლევებს, თეორიებსა და დამტკიცებულ ფაქტებს.',
+            phrases: [
+              'ამ საკითხის შესახებ მეცნიერები ამტკიცებენ, რომ...',
+              'როგორც სამეცნიერო ლიტერატურაშია ცნობილი...',
+              'სამეცნიერო ლიტერატურაში აღწერილია...'
+            ],
+            examples: [
+              'ამ საკითხის შესახებ მეცნიერები ამტკიცებენ, რომ კლიმატის ცვლილება შეუქცევადი პროცესია.',
+              'როგორც სამეცნიერო ლიტერატურაშია ცნობილი, წყალი დედამიწის ზედაპირის 71%-ს ფარავს.'
+            ],
+            color: 'bg-cyan-100 border-cyan-500 text-cyan-900',
+            iconName: 'microscope'
+          },
+          {
+            id: 't5',
+            type: ArgumentType.HISTORICAL_FACT,
+            description: 'იყენებს წარსულის მოვლენებსა და ისტორიულ მონაცემებს არგუმენტის გასამყარებლად.',
+            phrases: [
+              'ისტორიიდან ვიცით, რომ...',
+              'ისტორიული წყაროები გვაუწყებს...',
+              'ისტორიული გამოცდილება გვარწმუნებს...'
+            ],
+            examples: [
+              'ისტორიიდან ვიცით, რომ დავით აღმაშენებელმა საქართველო გააერთიანა.',
+              'ისტორიული გამოცდილება გვარწმუნებს, რომ ომს არასდროს მოაქვს ნამდვილი ბედნიერება.'
+            ],
+            color: 'bg-amber-100 border-amber-500 text-amber-900',
+            iconName: 'scroll'
+          },
+          {
+            id: 't6',
+            type: ArgumentType.PERSONAL_EXPERIENCE,
+            description: 'ეფუძნება ავტორის პირად, ცხოვრებისეულ გამოცდილებასა და დაკვირვებებს.',
+            phrases: [
+              'გავიხსენებ ეპიზოდს ჩემი ცხოვრებიდან...',
+              'მახსენდება ერთი შემთხვევა...',
+              'ამგვარი რამ თავად განმიცდია...'
+            ],
+            examples: [
+              'გავიხსენებ ეპიზოდს ჩემი ცხოვრებიდან, როდესაც უცხოეთში ყოფნისას მშობლიური ენის ფასი გავიგე.',
+              'მახსენდება ერთი შემთხვევა, როცა სიკეთემ ადამიანის ცხოვრება შეცვალა.'
+            ],
+            color: 'bg-rose-100 border-rose-500 text-rose-900',
+            iconName: 'heart-handshake'
+          },
+          {
+            id: 't7',
+            type: ArgumentType.STATISTICS,
+            description: 'იყენებს რიცხობრივ მონაცემებსა და კვლევის შედეგებს სიზუსტისთვის.',
+            phrases: [
+              'სტატისტიკური მონაცემებით...',
+              'სოციოლოგიური გამოკითხვის თანახმად...',
+              'როგორც ინტერაქტიულმა გამოკითხვებმა აჩვენა...'
+            ],
+            examples: [
+              'სტატისტიკური მონაცემებით, მსოფლიო მოსახლეობის უმეტესობა ქალაქებში ცხოვრობს.',
+              'სოციოლოგიური გამოკითხვის თანახმად, მოსწავლეთა 80% უპირატესობას ანიჭებს ინტერაქტიულ გაკვეთილებს.'
+            ],
+            color: 'bg-indigo-100 border-indigo-500 text-indigo-900',
+            iconName: 'bar-chart'
+          },
+          {
+            id: 't8',
+            type: ArgumentType.PERSONAL_LOGIC,
+            description: 'ეყრდნობა ავტორის პირად მსჯელობას, ვარაუდსა და ლოგიკურ დასკვნებს.',
+            phrases: [
+              'დარწმუნებული ვარ, რომ...',
+              'თუ ეს ასეა, მაშინ...',
+              'ამ საკითხის შესახებ ვფიქრობ, რომ...'
+            ],
+            examples: [
+              'დარწმუნებული ვარ, რომ მომავალი თაობა შეძლებს ეკოლოგიური პრობლემების მოგვარებას.',
+              'თუ ეს ასეა, მაშინ ჩვენ ვალდებულნი ვართ, მეტი ვიზრუნოთ გარემოზე.'
+            ],
+            color: 'bg-teal-100 border-teal-500 text-teal-900',
+            iconName: 'brain-circuit'
+          }
+        ];
+
+        const identifyQuestions = [
+            {
+                id: 'q1',
+                sentence: 'ზემოთ ნათქვამს ადასტურებს ილია ჭავჭავაძის სიტყვები: "კმაყოფილება კაცის მომაკვდინებელი სენია".',
+                correctType: ArgumentType.CITATION,
+                hint: 'ყურადღება მიაქციეთ კონკრეტულ ავტორს და ბრჭყალებს.'
+            },
+            {
+                id: 'q2',
+                sentence: 'სტატისტიკური მონაცემებით, წელს ტურისტების რაოდენობა 20%-ით გაიზარდა.',
+                correctType: ArgumentType.STATISTICS,
+                hint: 'წინადადება შეიცავს რიცხობრივ მონაცემებს.'
+            },
+            {
+                id: 'q3',
+                sentence: 'ისტორიიდან ვიცით, რომ 1121 წელს დიდგოროს ბრძოლა მოხდა.',
+                correctType: ArgumentType.HISTORICAL_FACT,
+                hint: 'საუბარია წარსულში მომხდარ კონკრეტულ ფაქტზე.'
+            },
+            {
+                id: 'q4',
+                sentence: 'საყოველთაოდ აღიარებულია, რომ დედამიწა მზის გარშემო ბრუნავს.',
+                correctType: ArgumentType.COMMON_KNOWLEDGE,
+                hint: 'ეს არის ფაქტი, რომელზეც არავინ დავობს.'
+            },
+            {
+                id: 'q5',
+                sentence: 'გავიხსენებ ეპიზოდს ჩემი ცხოვრებიდან, როდესაც პირველად წავედი სკოლაში.',
+                correctType: ArgumentType.PERSONAL_EXPERIENCE,
+                hint: 'ავტორი საუბრობს საკუთარ თავზე.'
+            },
+            {
+                id: 'q6',
+                sentence: 'დარწმუნებული ვარ, რომ შრომისმოყვარეობა წარმატების აუცილებელი პირობაა.',
+                correctType: ArgumentType.PERSONAL_LOGIC,
+                hint: 'გამოხატულია ავტორის პირადი რწმენა და ვარაუდი.'
+            },
+            {
+                id: 'q7',
+                sentence: 'ამ საკითხის შესახებ მეცნიერები ამტკიცებენ, რომ გლობალური დათბობა რეალური საფრთხეა.',
+                correctType: ArgumentType.SCIENTIFIC_FACT,
+                hint: 'საუბარია ექსპერტებისა და მეცნიერების დასკვნებზე.'
+            },
+            {
+                id: 'q8',
+                sentence: 'ბევრი ფიქრობს, რომ ხელოვნება სულის სარკეა.',
+                correctType: ArgumentType.OTHERS_OPINION,
+                hint: 'გამოთქმულია საზოგადოების ნაწილის აზრი.'
+            },
+            {
+                id: 'q9',
+                sentence: 'სოციოლოგიური გამოკითხვის თანახმად, ახალგაზრდების უმრავლესობა სპორტითაა დაკავებული.',
+                correctType: ArgumentType.STATISTICS,
+                hint: 'ეყრდნობა გამოკითხვის შედეგებს.'
+            },
+            {
+                id: 'q10',
+                sentence: 'საილუსტრაციოდ მოვიყვანთ ფრაგმენტს "ვეფხისტყაოსნიდან".',
+                correctType: ArgumentType.CITATION,
+                hint: 'მიუთითებს ლიტერატურულ ნაწარმოებზე.'
+            },
+            {
+                id: 'q11',
+                sentence: 'ისტორიული გამოცდილება გვარწმუნებს, რომ ძალა ერთობაშია.',
+                correctType: ArgumentType.HISTORICAL_FACT,
+                hint: 'არგუმენტი ეყრდნობა წარსულის გამოცდილებას.'
+            },
+            {
+                id: 'q12',
+                sentence: 'ამ საკითხის შესახებ ვფიქრობ, რომ გამოსავალი ყოველთვის არსებობს.',
+                correctType: ArgumentType.PERSONAL_LOGIC,
+                hint: 'ავტორი გამოთქვამს საკუთარ მოსაზრებას.'
+            },
+            {
+                id: 'q13',
+                sentence: 'მახსენდება ერთი შემთხვევა, როცა მეგობარი გასაჭირში დამეხმარა.',
+                correctType: ArgumentType.PERSONAL_EXPERIENCE,
+                hint: 'ავტორი იხსენებს პირად ისტორიას.'
+            },
+            {
+                id: 'q14',
+                sentence: 'როგორც სამეცნიერო ლიტერატურაშია ცნობილი, ადამიანის ტვინი ურთულესი მექანიზმია.',
+                correctType: ArgumentType.SCIENTIFIC_FACT,
+                hint: 'წყარო არის მეცნიერება.'
+            },
+            {
+                id: 'q15',
+                sentence: 'როგორც ცნობილია, ჯანმრთელობა ყველაზე დიდი სიმდიდრეა.',
+                correctType: ArgumentType.COMMON_KNOWLEDGE,
+                hint: 'ეს არის საყოველთაო ჭეშმარიტება.'
+            },
+            {
+                id: 'q16',
+                sentence: 'საზოგადოებაში გავრცელებული აზრით, წიგნის კითხვა აუცილებელია.',
+                correctType: ArgumentType.OTHERS_OPINION,
+                hint: 'სხვების აზრი.'
+            },
+            {
+                id: 'q17',
+                sentence: 'აკაკი წერეთელი აღნიშნავდა: "სჯობს მონობაში გადიდკაცებულს თავისუფლების ძებნაში მკვდარი".',
+                correctType: ArgumentType.CITATION,
+                hint: 'მოყვანილია კონკრეტული პიროვნების სიტყვები.'
+            },
+            {
+                id: 'q18',
+                sentence: 'როგორც ინტერაქტიულმა გამოკითხვებმა აჩვენა, ონლაინსწავლება სულ უფრო პოპულარული ხდება.',
+                correctType: ArgumentType.STATISTICS,
+                hint: 'საუბარია კვლევის შედეგებზე.'
+            },
+            {
+                id: 'q19',
+                sentence: 'ისტორიული წყაროები გვაუწყებს, რომ ფარნავაზმა ქართული დამწერლობა შექმნა.',
+                correctType: ArgumentType.HISTORICAL_FACT,
+                hint: 'ფაქტი წარსულიდან.'
+            },
+            {
+                id: 'q20',
+                sentence: 'თუ ეს ასეა, მაშინ ჩვენ მეტი პასუხისმგებლობა გვმართებს.',
+                correctType: ArgumentType.PERSONAL_LOGIC,
+                hint: 'ლოგიკური დასკვნა.'
+            }
+        ];
+
+        const fillQuestions = [
+            {
+                id: 'f1',
+                sentenceStart: '',
+                sentenceEnd: ', განათლება ქვეყნის წინსვლის საწინდარია.',
+                correctPhrase: 'საყოველთაოდ აღიარებულია, რომ',
+                targetType: ArgumentType.COMMON_KNOWLEDGE,
+                options: ['საყოველთაოდ აღიარებულია, რომ', 'სტატისტიკური მონაცემებით', 'გავიხსენებ ეპიზოდს', 'ისტორიიდან ვიცით'],
+                hint: 'ეძებეთ ფრაზა, რომელიც გამოხატავს საზოგადო ჭეშმარიტებას.'
+            },
+            {
+                id: 'f2',
+                sentenceStart: '',
+                sentenceEnd: 'მოსახლეობის 60% ინტერნეტს ყოველდღიურად მოიხმარს.',
+                correctPhrase: 'სტატისტიკური მონაცემებით',
+                targetType: ArgumentType.STATISTICS,
+                options: ['დარწმუნებული ვარ, რომ', 'სტატისტიკური მონაცემებით', 'როგორც ცნობილია', 'საილუსტრაციოდ მოვიყვანთ'],
+                hint: 'წინადადება შეიცავს პროცენტულ მაჩვენებელს.'
+            },
+            {
+                id: 'f3',
+                sentenceStart: '',
+                sentenceEnd: 'ვაჟა-ფშაველას სიტყვები: "ცუდას რად უნდა მტერობა, კარგია მუდამ მტრიანი".',
+                correctPhrase: 'ზემოთ ნათქვამს ადასტურებს',
+                targetType: ArgumentType.CITATION,
+                options: ['ზემოთ ნათქვამს ადასტურებს', 'სამეცნიერო ლიტერატურაშია ცნობილი', 'სტატისტიკის თანახმად', 'ბევრი ფიქრობს, რომ'],
+                hint: 'საუბარია კონკრეტულ მწერალზე.'
+            },
+            {
+                id: 'f4',
+                sentenceStart: '',
+                sentenceEnd: 'თამარ მეფის დროს საქართველოში ოქროს ხანა იყო.',
+                correctPhrase: 'ისტორიული წყაროები გვაუწყებს, რომ',
+                targetType: ArgumentType.HISTORICAL_FACT,
+                options: ['ისტორიული წყაროები გვაუწყებს, რომ', 'ამ საკითხის შესახებ ვფიქრობ, რომ', 'სოციოლოგიური გამოკითხვით', 'მახსენდება ერთი შემთხვევა'],
+                hint: 'ფაქტი ეხება წარსულს.'
+            },
+            {
+                id: 'f5',
+                sentenceStart: '',
+                sentenceEnd: 'როცა ჩემმა მეგობარმა რთული ამოცანა დამოუკიდებლად გადაჭრა.',
+                correctPhrase: 'მახსენდება ერთი შემთხვევა',
+                targetType: ArgumentType.PERSONAL_EXPERIENCE,
+                options: ['საყოველთაოდ აღიარებულია', 'მახსენდება ერთი შემთხვევა', 'მეცნიერები ამტკიცებენ', 'ისტორიიდან ვიცით'],
+                hint: 'ავტორი საუბრობს პირად მოგონებაზე.'
+            },
+            {
+                id: 'f6',
+                sentenceStart: '',
+                sentenceEnd: 'მომავალი ტექნოლოგიებს ეკუთვნის.',
+                correctPhrase: 'დარწმუნებული ვარ, რომ',
+                targetType: ArgumentType.PERSONAL_LOGIC,
+                options: ['დარწმუნებული ვარ, რომ', 'სტატისტიკური მონაცემებით', 'ისტორიული წყაროები გვაუწყებს', 'საილუსტრაციოდ მოვიყვანთ'],
+                hint: 'ეს არის ავტორის პირადი რწმენა.'
+            },
+            {
+                id: 'f7',
+                sentenceStart: '',
+                sentenceEnd: 'მსოფლიო ოკეანე ჯერ კიდევ შეუსწავლელია.',
+                correctPhrase: 'მეცნიერები ამტკიცებენ, რომ',
+                targetType: ArgumentType.SCIENTIFIC_FACT,
+                options: ['მეცნიერები ამტკიცებენ, რომ', 'გავიხსენებ ჩემი ცხოვრებიდან', 'ჩემი აზრით', 'აკაკი წერეთელი ამბობდა'],
+                hint: 'საჭიროა კომპეტენტური წყარო.'
+            },
+            {
+                id: 'f8',
+                sentenceStart: '',
+                sentenceEnd: 'დრო ფულია.',
+                correctPhrase: 'როგორც ცნობილია, არავინ დაობს, რომ',
+                targetType: ArgumentType.COMMON_KNOWLEDGE,
+                options: ['როგორც ცნობილია, არავინ დაობს, რომ', 'ისტორიიდან ვიცით', 'სტატისტიკის მიხედვით', 'მეცნიერულად დამტკიცებულია'],
+                hint: 'ეს არის ცნობილი აქსიომა.'
+            },
+            {
+                id: 'f9',
+                sentenceStart: '',
+                sentenceEnd: 'გლობალიზაცია კულტურულ იდენტობას საფრთხეს უქმნის.',
+                correctPhrase: 'ბევრი ფიქრობს, რომ',
+                targetType: ArgumentType.OTHERS_OPINION,
+                options: ['ბევრი ფიქრობს, რომ', 'ისტორიული წყაროები გვაუწყებს', 'სტატისტიკა გვიჩვენებს', 'საყოველთაოდ აღიარებულია'],
+                hint: 'ეს არის საზოგადოებაში არსებული ერთ-ერთი მოსაზრება.'
+            },
+            {
+                id: 'f10',
+                sentenceStart: '',
+                sentenceEnd: 'საქართველოს დემოკრატიული რესპუბლიკა 1918 წელს შეიქმნა.',
+                correctPhrase: 'ისტორიიდან ვიცით, რომ',
+                targetType: ArgumentType.HISTORICAL_FACT,
+                options: ['ისტორიიდან ვიცით, რომ', 'დარწმუნებული ვარ', 'ჩემი გამოცდილებით', 'მეცნიერები ვარაუდობენ'],
+                hint: 'თარიღი და ისტორიული მოვლენა.'
+            },
+            {
+                id: 'f11',
+                sentenceStart: '',
+                sentenceEnd: 'ამინდი ადამიანის განწყობაზე მოქმედებს.',
+                correctPhrase: 'სამეცნიერო ლიტერატურაში აღწერილია, რომ',
+                targetType: ArgumentType.SCIENTIFIC_FACT,
+                options: ['სამეცნიერო ლიტერატურაში აღწერილია, რომ', 'ისტორიული გამოცდილებით', 'იაკობ გოგებაშვილი წერდა', 'სოციოლოგიური კვლევით'],
+                hint: 'ეს არის ბიოლოგიური/ფსიქოლოგიური ფაქტი.'
+            },
+            {
+                id: 'f12',
+                sentenceStart: '',
+                sentenceEnd: 'ადამიანი შეცდომებზე სწავლობს.',
+                correctPhrase: 'ამგვარი რამ თავად განმიცდია, რომ',
+                targetType: ArgumentType.PERSONAL_EXPERIENCE,
+                options: ['ამგვარი რამ თავად განმიცდია, რომ', 'სტატისტიკა ადასტურებს', 'მეცნიერები ამბენ', 'ისტორიული წყაროები'],
+                hint: 'ავტორი საკუთარ გამოცდილებას იშველიებს.'
+            },
+            {
+                id: 'f13',
+                sentenceStart: '',
+                sentenceEnd: 'გამოკითხულთა 95% კმაყოფილია მომსახურებით.',
+                correctPhrase: 'როგორც ინტერაქტიულმა გამოკითხვებმა აჩვენა',
+                targetType: ArgumentType.STATISTICS,
+                options: ['როგორც ინტერაქტიულმა გამოკითხვებმა აჩვენა', 'ისტორიიდან ვიცით', 'ჩემი აზრით', 'საყოველთაოდ ცნობილია'],
+                hint: 'საუბარია კონკრეტულ გამოკითხვაზე.'
+            },
+            {
+                id: 'f14',
+                sentenceStart: '',
+                sentenceEnd: 'ნებისმიერ პრობლემას აქვს მოგვარების გზა.',
+                correctPhrase: 'ამ საკითხის შესახებ ვფიქრობ, რომ',
+                targetType: ArgumentType.PERSONAL_LOGIC,
+                options: ['ამ საკითხის შესახებ ვფიქრობ, რომ', 'სტატისტიკის თანახმად', 'ისტორიული წყაროებით', 'მეცნიერულად დადასტურებულია'],
+                hint: 'ავტორის პირადი პოზიცია.'
+            },
+            {
+                id: 'f15',
+                sentenceStart: '',
+                sentenceEnd: 'რუსთაველის აფორიზმს: "ლეკვი ლომისა სწორია...".',
+                correctPhrase: 'საილუსტრაციოდ მოვიყვან',
+                targetType: ArgumentType.CITATION,
+                options: ['საილუსტრაციოდ მოვიყვან', 'სტატისტიკით', 'ჩემი გამოცდილებით', 'მეცნიერები ამტკიცებენ'],
+                hint: 'ციტირების შესავალი.'
+            },
+            {
+                id: 'f16',
+                sentenceStart: '',
+                sentenceEnd: 'სპორტი ჯანმრთელობისთვის სასარგებლოა.',
+                correctPhrase: 'საზოგადოდ მიღებული თვალსაზრისის თანახმად',
+                targetType: ArgumentType.COMMON_KNOWLEDGE,
+                options: ['საზოგადოდ მიღებული თვალსაზრისის თანახმად', 'გავიხსენებ ეპიზოდს', 'ისტორიული წყაროები', 'ილია წერდა'],
+                hint: 'ეს ფაქტი საყოველთაოდაა ცნობილი.'
+            },
+            {
+                id: 'f17',
+                sentenceStart: '',
+                sentenceEnd: 'ხელოვნური ინტელექტი სამუშაო ადგილებს შეამცირებს.',
+                correctPhrase: 'საზოგადოებაში გავრცელებული აზრით',
+                targetType: ArgumentType.OTHERS_OPINION,
+                options: ['საზოგადოებაში გავრცელებული აზრით', 'ისტორიიდან ვიცით', 'ჩემი გამოცდილებით', 'სტატისტიკა ამბობს'],
+                hint: 'ეს არის ვარაუდი, რომელიც ხალხში ტრიალებს.'
+            },
+            {
+                id: 'f18',
+                sentenceStart: '',
+                sentenceEnd: 'ვაქცინაცია იმუნიტეტს აძლიერებს.',
+                correctPhrase: 'სამეცნიერო ლიტერატურაშია ცნობილი, რომ',
+                targetType: ArgumentType.SCIENTIFIC_FACT,
+                options: ['სამეცნიერო ლიტერატურაშია ცნობილი, რომ', 'ისტორიული წყაროები', 'გავიხსენებ ეპიზოდს', 'ხალხში გავრცელებულია'],
+                hint: 'მედიცინა მეცნიერების დარგია.'
+            },
+            {
+                id: 'f19',
+                sentenceStart: '',
+                sentenceEnd: 'მე უფრო ყურადღებიანი გავხდი გარემოს მიმართ.',
+                correctPhrase: 'მინდა გაგიზიაროთ ჩემი დამოკიდებულება:',
+                targetType: ArgumentType.PERSONAL_EXPERIENCE,
+                options: ['მინდა გაგიზიაროთ ჩემი დამოკიდებულება:', 'სტატისტიკის თანახმად', 'ისტორიიდან ვიცით', 'მეცნიერები ამტკიცებენ'],
+                hint: 'ავტორი საკუთარ თავზე საუბრობს.'
+            },
+            {
+                id: 'f20',
+                sentenceStart: '',
+                sentenceEnd: 'ჩვენ შევძლებთ უკეთესი საზოგადოების მშენებლობას.',
+                correctPhrase: 'თუ ეს ასეა, მაშინ',
+                targetType: ArgumentType.PERSONAL_LOGIC,
+                options: ['თუ ეს ასეა, მაშინ', 'სტატისტიკით', 'ისტორიული წყაროებით', 'საყოველთაოდ ცნობილია'],
+                hint: 'ლოგიკური დასკვნა.'
+            }
+        ];
+
+        const trueFalseQuestions = [
+            {
+                id: 'tf1',
+                sentence: 'სტატისტიკური მონაცემებით, ქალაქის მოსახლეობა 10%-ით გაიზარდა.',
+                proposedType: ArgumentType.STATISTICS,
+                isCorrect: true,
+                hint: 'ყურადღება მიაქციეთ პროცენტულ მაჩვენებელს.'
+            },
+            {
+                id: 'tf2',
+                sentence: 'დარწმუნებული ვარ, რომ სიკეთე ყოველთვის იმარჯვებს.',
+                proposedType: ArgumentType.SCIENTIFIC_FACT,
+                isCorrect: false,
+                hint: 'ეს არის ავტორის პირადი რწმენა და არა მეცნიერული ფაქტი.'
+            },
+            {
+                id: 'tf3',
+                sentence: 'ისტორიიდან ვიცით, რომ რომი ერთ დღეში არ აშენებულა.',
+                proposedType: ArgumentType.HISTORICAL_FACT,
+                isCorrect: true,
+                hint: 'წინადადება მიუთითებს ისტორიულ ცოდნაზე.'
+            },
+            {
+                id: 'tf4',
+                sentence: 'საყოველთაოდ აღიარებულია, რომ წყალი აუცილებელია სიცოცხლისთვის.',
+                proposedType: ArgumentType.STATISTICS,
+                isCorrect: false,
+                hint: 'აქ არ არის მოყვანილი რიცხობრივი მონაცემები.'
+            },
+            {
+                id: 'tf5',
+                sentence: 'ილია ჭავჭავაძე წერდა: "მოძრაობა და მხოლოდ მოძრაობა...".',
+                proposedType: ArgumentType.CITATION,
+                isCorrect: true,
+                hint: 'მოყვანილია ავტორის ზუსტი სიტყვები.'
+            },
+            {
+                id: 'tf6',
+                sentence: 'გავიხსენებ ეპიზოდს ჩემი ბავშვობიდან, როცა სოფელში ვისვენებდი.',
+                proposedType: ArgumentType.HISTORICAL_FACT,
+                isCorrect: false,
+                hint: 'ეს არის პირადი მოგონება და არა ისტორიული ფაქტი.'
+            },
+            {
+                id: 'tf7',
+                sentence: 'მეცნიერები ამტკიცებენ, რომ ძილის ნაკლებობა იმუნიტეტს აქვეითებს.',
+                proposedType: ArgumentType.SCIENTIFIC_FACT,
+                isCorrect: true,
+                hint: 'წყარო არის მეცნიერული კვლევა.'
+            },
+            {
+                id: 'tf8',
+                sentence: 'ბევრი ფიქრობს, რომ თანამედროვე მუსიკა ძალიან ხმაურიანია.',
+                proposedType: ArgumentType.PERSONAL_LOGIC,
+                isCorrect: false,
+                hint: 'ეს არის სხვათა (საზოგადოების ნაწილის) მოსაზრება.'
+            },
+            {
+                id: 'tf9',
+                sentence: 'მახსენდება ერთი შემთხვევა, როცა ტყეში დავიკარგე.',
+                proposedType: ArgumentType.PERSONAL_EXPERIENCE,
+                isCorrect: true,
+                hint: 'ავტორი საკუთარ გამოცდილებას ჰყვება.'
+            },
+            {
+                id: 'tf10',
+                sentence: 'საილუსტრაციოდ მოვიყვანთ სტრიქონებს გალაკტიონის ლექსიდან.',
+                proposedType: ArgumentType.COMMON_KNOWLEDGE,
+                isCorrect: false,
+                hint: 'ეს არის ციტირების შესავალი და არა საზოგადო ცოდნა.'
+            },
+            {
+                id: 'tf11',
+                sentence: 'როგორც ცნობილია, მეგობარი გაჭირვებაში იცნობა.',
+                proposedType: ArgumentType.COMMON_KNOWLEDGE,
+                isCorrect: true,
+                hint: 'ეს არის საყოველთაოდ მიღებული ჭეშმარიტება.'
+            },
+            {
+                id: 'tf12',
+                sentence: 'სოციოლოგიური გამოკითხვით, მოსახლეობის 70% მხარს უჭერს რეფორმას.',
+                proposedType: ArgumentType.PERSONAL_EXPERIENCE,
+                isCorrect: false,
+                hint: 'ეს არის სტატისტიკა და არა პირადი გამოცდილება.'
+            },
+            {
+                id: 'tf13',
+                sentence: 'ამ საკითხის შესახებ ვფიქრობ, რომ განათლება უფასო უნდა იყოს.',
+                proposedType: ArgumentType.PERSONAL_LOGIC,
+                isCorrect: true,
+                hint: 'გამოხატულია ავტორის პირადი პოზიცია.'
+            },
+            {
+                id: 'tf14',
+                sentence: 'სამეცნიერო ლიტერატურაში აღწერილია ვულკანების ამოფრქვევის მიზეზები.',
+                proposedType: ArgumentType.CITATION,
+                isCorrect: false,
+                hint: 'ეს არის მეცნიერული ფაქტი და არა ციტატა.'
+            },
+            {
+                id: 'tf15',
+                sentence: 'საზოგადოებაში გავრცელებული აზრით, წარმატებას შრომა სჭირდება.',
+                proposedType: ArgumentType.OTHERS_OPINION,
+                isCorrect: true,
+                hint: 'მითითებულია საზოგადოების აზრი.'
+            },
+            {
+                id: 'tf16',
+                sentence: 'ისტორიული წყაროები გვაუწყებს, რომ ვახტანგ გორგასალმა მოაკვლევინა ვარსქენი.',
+                proposedType: ArgumentType.SCIENTIFIC_FACT,
+                isCorrect: false,
+                hint: 'ეს არის ისტორიული ფაქტი და არა სამეცნიერო თეორია.'
+            },
+            {
+                id: 'tf17',
+                sentence: 'შოთა რუსთაველი ამბობდა: "ვინ მოყვარესა არ ეძებს, იგი თავისა მტერია".',
+                proposedType: ArgumentType.CITATION,
+                isCorrect: true,
+                hint: 'მოყვანილია აფორიზმი.'
+            },
+            {
+                id: 'tf18',
+                sentence: 'თუ ეს ასეა, მაშინ ჩვენ ვალდებულნი ვართ დავეხმაროთ.',
+                proposedType: ArgumentType.HISTORICAL_FACT,
+                isCorrect: false,
+                hint: 'ეს არის ლოგიკური მსჯელობა.'
+            },
+            {
+                id: 'tf19',
+                sentence: 'ინტერაქტიულმა გამოკითხვამ აჩვენა, რომ ბავშვებს თამაშით სწავლა ურჩევნიათ.',
+                proposedType: ArgumentType.STATISTICS,
+                isCorrect: true,
+                hint: 'საუბარია კვლევის შედეგებზე.'
+            },
+            {
+                id: 'tf20',
+                sentence: 'არავინ დავობს იმის შესახებ, რომ დედამიწა მრგვალია.',
+                proposedType: ArgumentType.OTHERS_OPINION,
+                isCorrect: false,
+                hint: 'ეს არის საყოველთაოდ ცნობილი დებულება (აქსიომა).'
+            }
+        ];
+
+        // --- COMPONENTS ---
+
+        const Header = ({ activeTab, setActiveTab, score }) => {
+            const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+            const navItems = [
+                { id: 'theory', label: 'სწავლება', icon: <BookOpen size={18} /> },
+                { id: 'practice-identify', label: 'იდენტიფიკაცია', icon: <Target size={18} /> },
+                { id: 'practice-fill', label: 'შევსება', icon: <PenTool size={18} /> },
+                { id: 'practice-true-false', label: 'სწორია თუ არა?', icon: <CheckCircle2 size={18} /> },
+            ];
+
+            return (
+                <header className="sticky top-0 z-50 bg-white shadow-md border-b border-slate-200">
+                    <div className="container mx-auto px-4">
+                        <div className="flex justify-between items-center h-16">
+                            <div className="flex items-center space-x-2 cursor-pointer" onClick={() => setActiveTab('theory')}>
+                                <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white font-bold text-xl">
+                                    ა
+                                </div>
+                                <span className="text-xl font-bold text-slate-800 hidden sm:block">არგუმენტი</span>
+                            </div>
+
+                            <nav className="hidden md:flex space-x-1">
+                                {navItems.map((item) => (
+                                    <button
+                                        key={item.id}
+                                        onClick={() => setActiveTab(item.id)}
+                                        className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors duration-200 ${
+                                            activeTab === item.id
+                                                ? 'bg-indigo-100 text-indigo-700 font-medium'
+                                                : 'text-slate-600 hover:bg-slate-100'
+                                        }`}
+                                    >
+                                        {item.icon}
+                                        <span>{item.label}</span>
+                                    </button>
+                                ))}
+                            </nav>
+
+                            <div className="flex items-center">
+                                <div className="bg-amber-100 text-amber-800 px-4 py-1.5 rounded-full font-bold flex items-center shadow-sm">
+                                    <span className="mr-2 text-xl">⭐</span>
+                                    {score}
+                                </div>
+                                <button 
+                                    className="ml-4 md:hidden text-slate-600 focus:outline-none"
+                                    onClick={() => setIsMenuOpen(!isMenuOpen)}
+                                >
+                                    {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    {isMenuOpen && (
+                        <div className="md:hidden bg-white border-t border-slate-100 px-4 py-2 shadow-lg absolute w-full">
+                            <nav className="flex flex-col space-y-2">
+                                {navItems.map((item) => (
+                                    <button
+                                        key={item.id}
+                                        onClick={() => {
+                                            setActiveTab(item.id);
+                                            setIsMenuOpen(false);
+                                        }}
+                                        className={`flex items-center space-x-3 px-4 py-3 rounded-lg w-full text-left ${
+                                            activeTab === item.id
+                                                ? 'bg-indigo-50 text-indigo-700 font-medium'
+                                                : 'text-slate-600 hover:bg-slate-50'
+                                        }`}
+                                    >
+                                        {item.icon}
+                                        <span>{item.label}</span>
+                                    </button>
+                                ))}
+                            </nav>
+                        </div>
+                    )}
+                </header>
+            );
+        };
+
+        const iconMap = {
+            'quote': <Quote className="w-6 h-6" />,
+            'globe': <Globe className="w-6 h-6" />,
+            'users': <Users className="w-6 h-6" />,
+            'microscope': <Microscope className="w-6 h-6" />,
+            'scroll': <Scroll className="w-6 h-6" />,
+            'heart-handshake': <HeartHandshake className="w-6 h-6" />,
+            'bar-chart': <BarChart className="w-6 h-6" />,
+            'brain-circuit': <BrainCircuit className="w-6 h-6" />,
+        };
+
+        const TheoryCard = ({ item }) => {
+            return (
+                <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden hover:shadow-md transition-shadow duration-300">
+                    <div className={`px-6 py-4 border-b ${item.color.replace('text', 'border').split(' ')[1]} flex items-center justify-between`}>
+                        <div className="flex items-center space-x-3">
+                            <div className={`p-2 rounded-lg bg-white/50 ${item.color.split(' ')[2]}`}>
+                                {iconMap[item.iconName]}
+                            </div>
+                            <h3 className="text-lg font-bold text-slate-800">{item.type}</h3>
+                        </div>
+                    </div>
+                    
+                    <div className="p-6">
+                        <p className="text-slate-600 mb-6 leading-relaxed">
+                            {item.description}
+                        </p>
+
+                        <div className="mb-6">
+                            <h4 className="text-sm uppercase tracking-wide text-slate-400 font-bold mb-3">ენობრივი ფორმულები</h4>
+                            <ul className="space-y-2">
+                                {item.phrases.map((phrase, idx) => (
+                                    <li key={idx} className="flex items-start">
+                                        <span className="inline-block w-2 h-2 rounded-full bg-indigo-400 mt-2 mr-3 flex-shrink-0"></span>
+                                        <span className="text-slate-700 italic font-medium bg-slate-50 px-2 py-0.5 rounded text-sm">
+                                            {phrase}
+                                        </span>
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+
+                        <div>
+                            <h4 className="text-sm uppercase tracking-wide text-slate-400 font-bold mb-3">მაგალითები კონტექსტში</h4>
+                            <div className="space-y-3">
+                                {item.examples.map((ex, idx) => (
+                                    <div key={idx} className="bg-slate-50 p-3 rounded-lg border-l-4 border-indigo-200 text-sm text-slate-700">
+                                        {ex}
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const TheoryView = () => {
+            return (
+                <div className="max-w-7xl mx-auto py-8">
+                    <div className="text-center mb-10">
+                        <h2 className="text-3xl font-bold text-slate-800 mb-4">არგუმენტის მოყვანის საშუალებები</h2>
+                        <p className="text-slate-600 max-w-2xl mx-auto">
+                            ისწავლეთ როგორ გაამყაროთ თქვენი მოსაზრება სხვადასხვა ენობრივი საშუალებების გამოყენებით. 
+                            გაეცანით ქვემოთ მოცემულ 8 ძირითად ტიპს.
+                        </p>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 px-4">
+                        {theoryData.map((item) => (
+                            <TheoryCard key={item.id} item={item} />
+                        ))}
+                    </div>
+                </div>
+            );
+        };
+
+        const PracticeIdentify = ({ onScoreUpdate, completedTasks }) => {
+            const [currentIndex, setCurrentIndex] = useState(0);
+            const [selectedOption, setSelectedOption] = useState(null);
+            const [isCorrect, setIsCorrect] = useState(null);
+            const [showHint, setShowHint] = useState(false);
+            const [shuffledQuestions, setShuffledQuestions] = useState(identifyQuestions);
+
+            useEffect(() => {
+                setShuffledQuestions([...identifyQuestions].sort(() => Math.random() - 0.5));
+            }, []);
+
+            const currentQuestion = shuffledQuestions[currentIndex];
+            const isCompleted = completedTasks.includes(currentQuestion.id);
+
+            const handleOptionClick = (type) => {
+                if (selectedOption || isCompleted) return;
+
+                setSelectedOption(type);
+                const correct = type === currentQuestion.correctType;
+                setIsCorrect(correct);
+
+                if (correct && !isCompleted) {
+                    onScoreUpdate(10, currentQuestion.id);
+                }
+            };
+
+            const handleNext = () => {
+                setSelectedOption(null);
+                setIsCorrect(null);
+                setShowHint(false);
+                setCurrentIndex((prev) => (prev + 1) % shuffledQuestions.length);
+            };
+
+            const options = Object.values(ArgumentType);
+
+            return (
+                <div className="max-w-3xl mx-auto px-4 py-8">
+                    <div className="bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden">
+                        <div className="bg-slate-50 px-6 py-4 border-b border-slate-200 flex justify-between items-center">
+                            <span className="text-sm font-bold text-slate-500 uppercase tracking-wider">
+                                დავალება {currentIndex + 1} / {shuffledQuestions.length}
+                            </span>
+                            {isCompleted && (
+                                <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-bold flex items-center">
+                                    <CheckCircle2 size={14} className="mr-1" /> შესრულებულია
+                                </span>
+                            )}
+                        </div>
+
+                        <div className="p-8">
+                            <h3 className="text-slate-500 font-medium mb-4 text-sm">განსაზღვრეთ არგუმენტის ტიპი:</h3>
+                            <div className="bg-indigo-50 border-l-4 border-indigo-500 p-6 rounded-r-lg mb-8">
+                                <p className="text-xl text-indigo-900 font-medium leading-relaxed">
+                                    "{currentQuestion.sentence}"
+                                </p>
+                            </div>
+
+                            <div className="mb-6 h-8">
+                                {showHint ? (
+                                    <div className="text-amber-600 text-sm flex items-center animate-fade-in">
+                                        <Lightbulb size={16} className="mr-2" />
+                                        {currentQuestion.hint}
+                                    </div>
+                                ) : (
+                                    !selectedOption && (
+                                        <button 
+                                            onClick={() => setShowHint(true)}
+                                            className="text-slate-400 hover:text-amber-500 text-sm flex items-center transition-colors"
+                                        >
+                                            <Lightbulb size={16} className="mr-2" />
+                                            მინიშნება
+                                        </button>
+                                    )
+                                )}
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-8">
+                                {options.map((option) => {
+                                    let btnClass = "p-4 rounded-xl border-2 text-left font-medium transition-all duration-200 flex items-center justify-between ";
+                                    
+                                    if (selectedOption === option) {
+                                        if (option === currentQuestion.correctType) {
+                                            btnClass += "bg-green-50 border-green-500 text-green-800 shadow-md transform scale-[1.02]";
+                                        } else {
+                                            btnClass += "bg-red-50 border-red-500 text-red-800 opacity-70";
+                                        }
+                                    } else if (selectedOption && option === currentQuestion.correctType) {
+                                        btnClass += "bg-green-50 border-green-500 text-green-800 opacity-60";
+                                    } else {
+                                        btnClass += "bg-white border-slate-200 hover:border-indigo-300 hover:bg-slate-50 text-slate-700";
+                                    }
+
+                                    if (selectedOption) btnClass += " cursor-default";
+                                    else btnClass += " cursor-pointer";
+
+                                    return (
+                                        <button
+                                            key={option}
+                                            onClick={() => handleOptionClick(option)}
+                                            disabled={!!selectedOption}
+                                            className={btnClass}
+                                        >
+                                            <span>{option}</span>
+                                            {selectedOption === option && (
+                                                option === currentQuestion.correctType 
+                                                    ? <CheckCircle2 className="text-green-600" />
+                                                    : <XCircle className="text-red-600" />
+                                            )}
+                                        </button>
+                                    );
+                                })}
+                            </div>
+
+                            <div className="flex justify-end h-12">
+                                {selectedOption && (
+                                    <button
+                                        onClick={handleNext}
+                                        className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg font-bold flex items-center transition-colors shadow-lg animate-bounce-short"
+                                    >
+                                        შემდეგი <ArrowRight size={18} className="ml-2" />
+                                    </button>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const PracticeFill = ({ onScoreUpdate, completedTasks }) => {
+            const [currentIndex, setCurrentIndex] = useState(0);
+            const [selectedPhrase, setSelectedPhrase] = useState(null);
+            const [isCorrect, setIsCorrect] = useState(null);
+            const [showHint, setShowHint] = useState(false);
+            const [shuffledQuestions, setShuffledQuestions] = useState(fillQuestions);
+
+            useEffect(() => {
+                setShuffledQuestions([...fillQuestions].sort(() => Math.random() - 0.5));
+            }, []);
+
+            const currentQuestion = shuffledQuestions[currentIndex];
+            const isCompleted = completedTasks.includes(currentQuestion.id);
+
+            const [currentOptions, setCurrentOptions] = useState([]);
+            useEffect(() => {
+                setCurrentOptions([...currentQuestion.options].sort(() => Math.random() - 0.5));
+            }, [currentQuestion]);
+
+            const handleOptionClick = (phrase) => {
+                if (selectedPhrase || isCompleted) return;
+
+                setSelectedPhrase(phrase);
+                const correct = phrase === currentQuestion.correctPhrase;
+                setIsCorrect(correct);
+
+                if (correct && !isCompleted) {
+                    onScoreUpdate(10, currentQuestion.id);
+                }
+            };
+
+            const handleNext = () => {
+                setSelectedPhrase(null);
+                setIsCorrect(null);
+                setShowHint(false);
+                setCurrentIndex((prev) => (prev + 1) % shuffledQuestions.length);
+            };
+
+            return (
+                <div className="max-w-3xl mx-auto px-4 py-8">
+                    <div className="bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden">
+                        <div className="bg-slate-50 px-6 py-4 border-b border-slate-200 flex justify-between items-center">
+                            <span className="text-sm font-bold text-slate-500 uppercase tracking-wider">
+                                დავალება {currentIndex + 1} / {shuffledQuestions.length}
+                            </span>
+                            <div className="flex items-center space-x-2">
+                                <span className="text-xs font-semibold px-2 py-1 rounded bg-indigo-100 text-indigo-700">
+                                    მოთხოვნილი ტიპი: {currentQuestion.targetType}
+                                </span>
+                                {isCompleted && (
+                                    <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-bold flex items-center">
+                                        <CheckCircle2 size={14} className="mr-1" />
+                                    </span>
+                                )}
+                            </div>
+                        </div>
+
+                        <div className="p-8">
+                            <div className="flex items-center mb-6 space-x-2 text-slate-500">
+                                <PenTool size={18} />
+                                <h3 className="font-medium text-sm">შეავსეთ გამოტოვებული ადგილი:</h3>
+                            </div>
+                            
+                            <div className="bg-slate-50 border border-slate-200 p-8 rounded-xl mb-8 text-center shadow-inner">
+                                <p className="text-xl text-slate-800 leading-loose">
+                                    {currentQuestion.sentenceStart}
+                                    <span className={`inline-block mx-2 px-3 py-1 rounded-md font-bold border-b-4 transition-all duration-300 ${
+                                        selectedPhrase 
+                                            ? isCorrect 
+                                                ? 'bg-green-100 text-green-800 border-green-500' 
+                                                : 'bg-red-100 text-red-800 border-red-500 line-through decoration-2'
+                                            : 'bg-indigo-100 text-indigo-600 border-indigo-400 min-w-[150px]'
+                                    }`}>
+                                        {selectedPhrase || '_____________'}
+                                    </span>
+                                    {currentQuestion.sentenceEnd}
+                                </p>
+                                
+                                {selectedPhrase && !isCorrect && (
+                                    <div className="mt-4 animate-fade-in">
+                                        <p className="text-sm text-green-600 font-bold">
+                                            სწორია: <span className="underline">{currentQuestion.correctPhrase}</span>
+                                        </p>
+                                    </div>
+                                )}
+                            </div>
+
+                            <div className="mb-6 h-6 flex justify-center">
+                                {showHint ? (
+                                    <div className="text-amber-600 text-sm flex items-center">
+                                        <Lightbulb size={16} className="mr-2" />
+                                        {currentQuestion.hint}
+                                    </div>
+                                ) : (
+                                    !selectedPhrase && (
+                                        <button 
+                                            onClick={() => setShowHint(true)}
+                                            className="text-slate-400 hover:text-amber-500 text-sm flex items-center transition-colors"
+                                        >
+                                            <Lightbulb size={16} className="mr-2" />
+                                            მინიშნება
+                                        </button>
+                                    )
+                                )}
+                            </div>
+
+                            <div className="space-y-3">
+                                {currentOptions.map((option, idx) => {
+                                    let btnClass = "w-full p-4 rounded-xl border text-left font-medium transition-all duration-200 flex items-center justify-between ";
+                                    
+                                    if (selectedPhrase === option) {
+                                        if (option === currentQuestion.correctPhrase) {
+                                            btnClass += "bg-green-50 border-green-500 text-green-800 shadow-md";
+                                        } else {
+                                            btnClass += "bg-red-50 border-red-500 text-red-800";
+                                        }
+                                    } else {
+                                        btnClass += "bg-white border-slate-200 hover:border-indigo-300 hover:bg-slate-50 text-slate-700";
+                                    }
+
+                                    if (selectedPhrase) btnClass += " opacity-50 cursor-default";
+                                    if (selectedPhrase === option) btnClass = btnClass.replace("opacity-50", "opacity-100");
+
+                                    return (
+                                        <button
+                                            key={idx}
+                                            onClick={() => handleOptionClick(option)}
+                                            disabled={!!selectedPhrase}
+                                            className={btnClass}
+                                        >
+                                            {option}
+                                            {selectedPhrase === option && (
+                                                option === currentQuestion.correctPhrase 
+                                                    ? <CheckCircle2 className="text-green-600" />
+                                                    : <XCircle className="text-red-600" />
+                                            )}
+                                        </button>
+                                    );
+                                })}
+                            </div>
+
+                            <div className="flex justify-end mt-8 h-10">
+                                {selectedPhrase && (
+                                    <button
+                                        onClick={handleNext}
+                                        className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg font-bold flex items-center transition-colors shadow-lg"
+                                    >
+                                        შემდეგი <ArrowRight size={18} className="ml-2" />
+                                    </button>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const PracticeTrueFalse = ({ onScoreUpdate, completedTasks }) => {
+            const [currentIndex, setCurrentIndex] = useState(0);
+            const [hasAnswered, setHasAnswered] = useState(false);
+            const [isCorrect, setIsCorrect] = useState(null);
+            const [showHint, setShowHint] = useState(false);
+            const [shuffledQuestions, setShuffledQuestions] = useState(trueFalseQuestions);
+
+            useEffect(() => {
+                setShuffledQuestions([...trueFalseQuestions].sort(() => Math.random() - 0.5));
+            }, []);
+
+            const currentQuestion = shuffledQuestions[currentIndex];
+            const isCompleted = completedTasks.includes(currentQuestion.id);
+
+            const handleAnswer = (userSaysTrue) => {
+                if (hasAnswered || isCompleted) return;
+
+                const answerIsCorrect = userSaysTrue === currentQuestion.isCorrect;
+                setHasAnswered(true);
+                setIsCorrect(answerIsCorrect);
+
+                if (answerIsCorrect && !isCompleted) {
+                    onScoreUpdate(10, currentQuestion.id);
+                }
+            };
+
+            const handleNext = () => {
+                setHasAnswered(false);
+                setIsCorrect(null);
+                setShowHint(false);
+                setCurrentIndex((prev) => (prev + 1) % shuffledQuestions.length);
+            };
+
+            return (
+                <div className="max-w-2xl mx-auto px-4 py-8">
+                    <div className="bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden">
+                        <div className="bg-slate-50 px-6 py-4 border-b border-slate-200 flex justify-between items-center">
+                            <span className="text-sm font-bold text-slate-500 uppercase tracking-wider">
+                                დავალება {currentIndex + 1} / {shuffledQuestions.length}
+                            </span>
+                            {isCompleted && (
+                                <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-bold flex items-center">
+                                    <CheckCircle2 size={14} className="mr-1" /> შესრულებულია
+                                </span>
+                            )}
+                        </div>
+
+                        <div className="p-8 text-center">
+                            <div className="mb-8">
+                                <h3 className="text-slate-400 font-bold uppercase text-xs tracking-widest mb-2">წინადადება</h3>
+                                <p className="text-xl text-slate-800 font-medium leading-relaxed bg-slate-50 p-4 rounded-lg border border-slate-100">
+                                    "{currentQuestion.sentence}"
+                                </p>
+                            </div>
+
+                            <div className="mb-10 relative">
+                                <div className="absolute inset-0 flex items-center" aria-hidden="true">
+                                    <div className="w-full border-t border-slate-200"></div>
+                                </div>
+                                <div className="relative flex justify-center">
+                                    <span className="bg-white px-2 text-slate-400">
+                                        <HelpCircle size={20} />
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div className="mb-8">
+                                <h3 className="text-slate-400 font-bold uppercase text-xs tracking-widest mb-2">შემოთავაზებული ტიპი</h3>
+                                <div className="inline-block px-6 py-2 bg-indigo-100 text-indigo-800 text-lg font-bold rounded-full">
+                                    {currentQuestion.proposedType}
+                                </div>
+                                <p className="mt-2 text-slate-500 text-sm">არის ეს მტკიცება სწორი?</p>
+                            </div>
+
+                            <div className="mb-8 h-6 flex justify-center">
+                                {showHint ? (
+                                    <div className="text-amber-600 text-sm flex items-center animate-fade-in">
+                                        <Lightbulb size={16} className="mr-2" />
+                                        {currentQuestion.hint}
+                                    </div>
+                                ) : (
+                                    !hasAnswered && (
+                                        <button 
+                                            onClick={() => setShowHint(true)}
+                                            className="text-slate-400 hover:text-amber-500 text-sm flex items-center transition-colors"
+                                        >
+                                            <Lightbulb size={16} className="mr-2" />
+                                            მინიშნება
+                                        </button>
+                                    )
+                                )}
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4 max-w-md mx-auto">
+                                <button
+                                    onClick={() => handleAnswer(true)}
+                                    disabled={hasAnswered}
+                                    className={`p-4 rounded-xl border-2 flex flex-col items-center justify-center transition-all duration-200 ${
+                                        hasAnswered 
+                                            ? currentQuestion.isCorrect 
+                                                ? 'bg-green-100 border-green-500 text-green-800 opacity-100'
+                                                : 'bg-slate-50 border-slate-200 text-slate-400 opacity-50' 
+                                            : 'bg-white border-green-200 hover:border-green-500 hover:bg-green-50 text-green-700'
+                                    }`}
+                                >
+                                    <Check className="w-8 h-8 mb-2" />
+                                    <span className="font-bold">კი (ჭეშმარიტი)</span>
+                                </button>
+
+                                <button
+                                    onClick={() => handleAnswer(false)}
+                                    disabled={hasAnswered}
+                                    className={`p-4 rounded-xl border-2 flex flex-col items-center justify-center transition-all duration-200 ${
+                                        hasAnswered
+                                            ? !currentQuestion.isCorrect
+                                                ? 'bg-green-100 border-green-500 text-green-800 opacity-100'
+                                                : 'bg-slate-50 border-slate-200 text-slate-400 opacity-50'
+                                            : 'bg-white border-red-200 hover:border-red-500 hover:bg-red-50 text-red-700'
+                                    }`}
+                                >
+                                    <X className="w-8 h-8 mb-2" />
+                                    <span className="font-bold">არა (მცდარი)</span>
+                                </button>
+                            </div>
+
+                            {hasAnswered && (
+                                <div className="mt-8 animate-fade-in">
+                                    <div className={`text-lg font-bold mb-4 ${isCorrect ? 'text-green-600' : 'text-red-600'}`}>
+                                        {isCorrect ? 'სწორია! 🎉' : 'არასწორია 😔'}
+                                    </div>
+                                    {!isCorrect && !currentQuestion.isCorrect && (
+                                        <p className="text-slate-600 mb-4">
+                                            სწორი პასუხია: <span className="font-bold text-indigo-600">არა</span>, რადგან ეს ტიპი არ შეესაბამება წინადადებას.
+                                        </p>
+                                    )}
+                                    {!isCorrect && currentQuestion.isCorrect && (
+                                        <p className="text-slate-600 mb-4">
+                                            სწორი პასუხია: <span className="font-bold text-indigo-600">კი</span>, ეს ნამდვილად {currentQuestion.proposedType}-ა.
+                                        </p>
+                                    )}
+                                    
+                                    <button
+                                        onClick={handleNext}
+                                        className="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-3 rounded-lg font-bold inline-flex items-center transition-colors shadow-lg animate-bounce-short"
+                                    >
+                                        შემდეგი <ArrowRight size={18} className="ml-2" />
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        // --- APP ---
+        const App = () => {
+            const [activeTab, setActiveTab] = useState('theory');
+            const [score, setScore] = useState(0);
+            const [completedTasks, setCompletedTasks] = useState([]);
+
+            const handleScoreUpdate = (points, taskId) => {
+                if (!completedTasks.includes(taskId)) {
+                    setScore(prev => prev + points);
+                    setCompletedTasks(prev => [...prev, taskId]);
+                }
+            };
+
+            const renderContent = () => {
+                switch (activeTab) {
+                    case 'theory':
+                        return <TheoryView />;
+                    case 'practice-identify':
+                        return (
+                            <PracticeIdentify 
+                                onScoreUpdate={handleScoreUpdate} 
+                                completedTasks={completedTasks} 
+                            />
+                        );
+                    case 'practice-fill':
+                        return (
+                            <PracticeFill 
+                                onScoreUpdate={handleScoreUpdate} 
+                                completedTasks={completedTasks} 
+                            />
+                        );
+                    case 'practice-true-false':
+                        return (
+                            <PracticeTrueFalse 
+                                onScoreUpdate={handleScoreUpdate} 
+                                completedTasks={completedTasks} 
+                            />
+                        );
+                    default:
+                        return <TheoryView />;
+                }
+            };
+
+            return (
+                <div className="min-h-screen bg-slate-50 text-slate-900 pb-12">
+                    <Header 
+                        activeTab={activeTab} 
+                        setActiveTab={setActiveTab} 
+                        score={score} 
+                    />
+                    <main className="container mx-auto px-4 mt-6 animate-fade-in">
+                        {renderContent()}
+                    </main>
+                </div>
+            );
+        };
+
+        const root = createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+<script type="module" src="/index.tsx"></script>
+</body>
+</html>
